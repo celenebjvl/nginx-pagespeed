@@ -1,0 +1,74 @@
+#!/bin/bash
+
+#Ubuntu Version
+ubuntu_ver="precise"
+
+#Find Path
+script_path=$( pwd | tr -d '\n')
+
+#Create version if does not exist
+if [ -f "cur_version" ]
+then
+	echo 0 > ./cur_version
+fi
+
+#Get latest version
+ver=$( curl --silent "http://ftp.de.debian.org/debian/pool/main/n/nginx/?C=N;O=D" | grep -i "nginx_" | grep -i "dsc" | sort -V | tail -1 | awk -F"</a>" '{print $1}' | awk -F 'href="' '{print $2}' | awk -F '">' '{print $1}')
+
+#Check if version is current
+if [[ $(echo $ver | awk -F".dsc" '{ print $1}') = $(cat "./cur_version") ]] 
+then
+	echo "Current Version:" $(cat /home/sandyd/dev/autobuild/nginx-pagespeed/precise/cur_version | awk -F".dsc" '{ print $1}')
+	echo "Version in Debian Repos:" $(echo $ver | awk -F".dsc" '{ print $1}')
+	echo "Version is current, no update needed"
+	exit 0
+fi
+echo "hi"
+echo "Current Version:" $(cat "./cur_version")
+echo "Version in Debian Repos:" $(echo $ver | awk -F".dsc" '{ print $1}')
+echo "Version out of date, update needed"
+
+ver_num=$(echo $ver | awk -F".dsc" '{ print $1}'|awk -F"_" '{print $2}')
+
+#Fetch archives
+echo "==Downloading latest Nginx from Debian=="
+dget http://ftp.de.debian.org/debian/pool/main/n/nginx/$ver
+
+#Get folder name
+folder_name=$( echo $ver | awk -F "-" '{ print $1}' | sed s/\_/-/)
+
+#Get nginx pagespeed
+cd $script_path/$folder_name/debian/modules
+echo "==Downloading ngx_pagespeed=="
+git clone https://github.com/pagespeed/ngx_pagespeed.git ngx_pagespeed
+cd $script_path/$folder_name/debian/modules/ngx_pagespeed
+echo "==Downloading PSOL Libraries=="
+curl https://dl.google.com/dl/page-speed/psol/1.7.30.1.tar.gz > psol.tar.gz
+#tar xf psol.tar.gz
+#rm psol.tar.gz
+
+echo "==Updating Debian Changelog=="
+echo "nginx ("$ver_num"sandydnet1~"$ubuntu_ver") " $ubuntu_ver"; urgency=high" > $script_path/$folder_name/debian/changelog2
+echo " " >> $script_path/$folder_name/debian/changelog2
+echo "  [Autopackage]"  >> $script_path/$folder_name/debian/changelog2
+echo "  * Backport from Debian" >> $script_path/$folder_name/debian/changelog2
+echo "  * Patched with Google Pagespeed" >> $script_path/$folder_name/debian/changelog2
+echo "" >> $script_path/$folder_name/debian/changelog2
+echo " -- Resurrectedstar <celene@sandydprod.net> " $( date +"%a, %d %b %Y %R:%S %z") >> $script_path/$folder_name/debian/changelog2
+echo "" >> $script_path/$folder_name/debian/changelog2
+cat $script_path/$folder_name/debian/changelog2 $script_path/$folder_name/debian/changelog > $script_path/$folder_name/debian/changelog3
+mv $script_path/$folder_name/debian/changelog3 $script_path/$folder_name/debian/changelog
+rm $script_path/$folder_name/debian/changelog2
+
+echo "==Adding ngx_pagespeed to rules=="
+cd $script_path/$folder_name/debian/
+patch -p0 < $script_path/ngx_pagespeed.patch
+
+echo $(echo $ver | awk -F".dsc" '{ print $1}') > $script_path/cur_version
+
+cd $script_path/$folder_name
+echo "debian/modules/ngx_pagespeed/psol.tar.gz" >> debian/source/include-binaries
+debuild -S
+cd $script_path/
+dput -f ppa:sandyd/nginx-current-pagespeed $(echo $ver | awk -F".dsc" '{ print $1}')sandydnet1~$(echo $ubuntu_ver)_source.changes
+rm -rf nginx*

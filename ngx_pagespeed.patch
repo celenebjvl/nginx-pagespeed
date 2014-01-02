@@ -1,0 +1,32 @@
+--- rules	2013-11-24 18:42:26.000000000 -0800
++++ rules2	2014-01-01 17:32:16.638755050 -0800
+@@ -40,6 +40,9 @@
+ 	cp -Pa $(CURDIR)/contrib $(BUILDDIR_$*)/
+ 	cp -Pa $(CURDIR)/src $(BUILDDIR_$*)/
+ 	cp -Pa $(CURDIR)/man $(BUILDDIR_$*)/
++	cd $(MODULESDIR)/ngx_pagespeed /
++	ls $(MODULESDIR)/ngx_pagespeed /
++	tar xvf $(MODULESDIR)/ngx_pagespeed/psol.tar.gz -C $(MODULESDIR)/ngx_pagespeed
+ 
+ config.status.full: config.env.full
+ 	cd $(BUILDDIR_full) && CFLAGS="$(CFLAGS)" CORE_LINK="$(LDFLAGS)" ./configure  \
+@@ -75,7 +78,8 @@
+ 	    --add-module=$(MODULESDIR)/nginx-echo \
+ 	    --add-module=$(MODULESDIR)/nginx-upstream-fair \
+ 	    --add-module=$(MODULESDIR)/ngx_http_substitutions_filter_module \
+-            $(CONFIGURE_OPTS) >$@
++	    --add-module=$(MODULESDIR)/ngx_pagespeed \
++            $(CONFIGURE_OPTS)
+ 	touch $@
+ 
+ config.status.light: config.env.light
+@@ -155,7 +159,8 @@
+ 	    --add-module=$(MODULESDIR)/nginx-upload-progress \
+ 	    --add-module=$(MODULESDIR)/nginx-upstream-fair \
+ 	    --add-module=$(MODULESDIR)/ngx_http_substitutions_filter_module \
+-            $(CONFIGURE_OPTS) >$@
++	    --add-module=$(MODULESDIR)/ngx_pagespeed \
++            $(CONFIGURE_OPTS)
+ 	touch $@
+ 
+ config.status.naxsi: config.env.naxsi
