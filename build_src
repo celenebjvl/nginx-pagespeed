@@ -3,6 +3,9 @@
 #Ubuntu Version
 ubuntu_ver="precise"
 
+#PPA to upload to (i.e. ppa:sandyd/nginx-current-pagespeed)
+ppaaddr=""
+
 #Find Path
 script_path=$( pwd | tr -d '\n')
 
@@ -48,7 +51,7 @@ curl https://dl.google.com/dl/page-speed/psol/1.7.30.1.tar.gz > psol.tar.gz
 #rm psol.tar.gz
 
 echo "==Updating Debian Changelog=="
-echo "nginx ("$ver_num"sandydnet1~"$ubuntu_ver") " $ubuntu_ver"; urgency=high" > $script_path/$folder_name/debian/changelog2
+echo "nginx ("$ver_num"~"$ubuntu_ver") " $ubuntu_ver"; urgency=high" > $script_path/$folder_name/debian/changelog2
 echo " " >> $script_path/$folder_name/debian/changelog2
 echo "  [Autopackage]"  >> $script_path/$folder_name/debian/changelog2
 echo "  * Backport from Debian" >> $script_path/$folder_name/debian/changelog2
@@ -70,5 +73,5 @@ cd $script_path/$folder_name
 echo "debian/modules/ngx_pagespeed/psol.tar.gz" >> debian/source/include-binaries
 debuild -S
 cd $script_path/
-dput -f ppa:sandyd/nginx-current-pagespeed $(echo $ver | awk -F".dsc" '{ print $1}')sandydnet1~$(echo $ubuntu_ver)_source.changes
+dput -f $($ppaaddr) $(echo $ver | awk -F".dsc" '{ print $1}')~$(echo $ubuntu_ver)_source.changes
 rm -rf nginx*
