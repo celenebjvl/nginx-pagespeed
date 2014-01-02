@@ -10,7 +10,7 @@ ppaaddr=""
 script_path=$( pwd | tr -d '\n')
 
 #Create version if does not exist
-if [ -f "cur_version" ]
+if [ ! -f "cur_version" ]
 then
 	echo 0 > ./cur_version
 fi
