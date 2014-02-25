@@ -21,7 +21,7 @@ ver=$( curl --silent "http://ftp.de.debian.org/debian/pool/main/n/nginx/?C=N;O=D
 #Check if version is current
 if [[ $(echo $ver | awk -F".dsc" '{ print $1}') = $(cat "./cur_version") ]] 
 then
-	echo "Current Version:" $(cat /home/sandyd/dev/autobuild/nginx-pagespeed/precise/cur_version | awk -F".dsc" '{ print $1}')
+	echo "Current Version:" $(cat ./cur_version | awk -F".dsc" '{ print $1}')
 	echo "Version in Debian Repos:" $(echo $ver | awk -F".dsc" '{ print $1}')
 	echo "Version is current, no update needed"
 	exit 0
