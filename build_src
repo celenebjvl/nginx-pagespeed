@@ -35,7 +35,7 @@ ver_num=$(echo $ver | awk -F".dsc" '{ print $1}'|awk -F"_" '{print $2}')
 
 #Fetch archives
 echo "==Downloading latest Nginx from Debian=="
-dget http://ftp.de.debian.org/debian/pool/main/n/nginx/$ver
+dget -u http://ftp.de.debian.org/debian/pool/main/n/nginx/$ver
 
 #Get folder name
 folder_name=$( echo $ver | awk -F "-" '{ print $1}' | sed s/\_/-/)
